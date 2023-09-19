@@ -20,7 +20,7 @@ public struct StorybookComponentProvider<Preview: View>: StorybookComponentProvi
     public let sourceLocation: StorybookComponentSourceLocation
     public let preview: () -> Preview
 
-    init(
+    public init(
         name: String,
         sourceLocation: StorybookComponentSourceLocation,
         @ViewBuilder preview: @escaping () -> Preview

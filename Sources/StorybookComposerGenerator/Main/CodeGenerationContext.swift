@@ -33,15 +33,13 @@ final class CodeGenerationContext {
         """
     }
 
-    func imports() -> String {
-        """
-        import SwiftUI
-        import StorybookComposer
-        \(additionalImports.joined(indentationLevel: 0))
-        """
+    private func imports() -> String {
+        (["SwiftUI", "StorybookComposer"] + additionalImports)
+            .map { "import \($0)" }
+            .joined(indentationLevel: 0)
     }
 
-    func rows(indentationLevel: Int) -> String {
+    private func rows(indentationLevel: Int) -> String {
         storybookComponentProvidersAccessPaths
             .map { "StorybookComponentRow(provider: \($0.description))" }
             .joined(indentationLevel: indentationLevel)
