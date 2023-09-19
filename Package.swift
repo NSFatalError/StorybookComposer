@@ -6,47 +6,101 @@ import CompilerPluginSupport
 
 let package = Package(
     name: "StorybookComposer",
-    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
+    platforms: [
+        .macOS(.v13),
+        .iOS(.v16),
+        .tvOS(.v16),
+        .watchOS(.v9),
+        .macCatalyst(.v16)
+    ],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "StorybookComposer",
             targets: ["StorybookComposer"]
         ),
-        .executable(
-            name: "StorybookComposerClient",
-            targets: ["StorybookComposerClient"]
+        .plugin(
+            name: "StorybookComposerPlugin",
+            targets: ["StorybookComposerPlugin"]
         ),
+        .executable(
+            name: "StorybookComposerGenerator",
+            targets: ["StorybookComposerGenerator"]
+        )
     ],
     dependencies: [
-        // Depend on the latest Swift 5.9 prerelease of SwiftSyntax
-        .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0-swift-5.9-DEVELOPMENT-SNAPSHOT-2023-04-25-b"),
+        .package(
+            url: "https://github.com/apple/swift-syntax.git",
+            from: "509.0.0-swift-5.9-DEVELOPMENT-SNAPSHOT-2023-09-05-a"
+        ),
+        .package(
+            url: "https://github.com/apple/swift-argument-parser",
+            from: "1.2.0"
+        )
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
-        // Macro implementation that performs the source transformation of a macro.
-        .macro(
+        .target(
+            name: "StorybookComposer",
+            dependencies: [
+                "StorybookComposerMacrosPlugin"
+            ]
+        ),
+
+        // ---
+
+        .target(
             name: "StorybookComposerMacros",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ]
         ),
-
-        // Library that exposes a macro as part of its API, which is used in client programs.
-        .target(name: "StorybookComposer", dependencies: ["StorybookComposerMacros"]),
-
-        // A client of the library, which is able to use the macro in its own code.
-        .executableTarget(name: "StorybookComposerClient", dependencies: ["StorybookComposer"]),
-
-        // A test target used to develop the macro implementation.
-        .testTarget(
-            name: "StorybookComposerTests",
+        .macro(
+            name: "StorybookComposerMacrosPlugin",
             dependencies: [
-                "StorybookComposerMacros",
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+                "StorybookComposerMacros"
             ]
         ),
+        .testTarget(
+            name: "StorybookComposerMacrosTests",
+            dependencies: [
+                "StorybookComposerMacros",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
+            ]
+        ),
+
+        // ---
+
+        .executableTarget(
+            name: "StorybookComposerGenerator",
+            dependencies: [
+                "StorybookComposerMacros",
+                .product(name: "SwiftSyntaxMacroExpansion", package: "swift-syntax"),
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ]
+        ),
+        .binaryTarget(
+            name: "StorybookComposerGeneratorTool",
+            path: "Tools/StorybookComposerGenerator.artifactbundle"
+        ),
+        .testTarget(
+            name: "StorybookComposerGeneratorTests",
+            dependencies: [
+                "StorybookComposerGenerator",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
+            ]
+        ),
+
+        // ---
+
+        .plugin(
+            name: "StorybookComposerPlugin",
+            capability: .buildTool(),
+            dependencies: [
+                .target(
+                    name: "StorybookComposerGeneratorTool",
+                    condition: .when(platforms: [.macOS])
+                )
+            ]
+        )
     ]
 )

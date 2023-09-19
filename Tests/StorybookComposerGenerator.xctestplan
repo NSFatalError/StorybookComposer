@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "11E96CE2-4932-4997-97E7-DD959C0F2387",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "StorybookComposerGeneratorTests",
+        "name" : "StorybookComposerGeneratorTests"
+      }
+    }
+  ],
+  "version" : 1
+}
